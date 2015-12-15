@@ -17,9 +17,13 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import sc.fiji.analyzeSkeleton.*;
-import sc.fiji.skeletonize3D.Skeletonize3D_;
 import ij.ImagePlus;
+import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
+import sc.fiji.analyzeSkeleton.Edge;
+import sc.fiji.analyzeSkeleton.Graph;
+import sc.fiji.analyzeSkeleton.Point;
+import sc.fiji.analyzeSkeleton.Vertex;
+import sc.fiji.skeletonize3D.Skeletonize3D_;
 
 /**
  * Skeletonizes the input image, and then calculates the angles at each of its
@@ -64,11 +68,11 @@ public class TriplePointAngles implements Op {
 
 	/**
 	 * Sets the input image for processing
-	 * 
+	 *
 	 * @throws NullPointerException if image == null
 	 * @throws IllegalArgumentException if image is not binary
 	 */
-	public void setInputImage(ImagePlus image) {
+	public void setInputImage(final ImagePlus image) {
 		checkImage(image);
 
 		inputImage = image;
@@ -82,7 +86,7 @@ public class TriplePointAngles implements Op {
 	 * @throws IllegalArgumentException if nthPoint < 0 && nthPoint !=
 	 *           TriplePointAngles#VERTEX_TO_VERTEX
 	 */
-	public void setNthPoint(int nthPoint) {
+	public void setNthPoint(final int nthPoint) {
 		checkNthPoint(nthPoint);
 
 		this.nthPoint = nthPoint;
@@ -90,7 +94,7 @@ public class TriplePointAngles implements Op {
 
 	/**
 	 * Calculates the triple point angles of the input image to the results array
-	 * 
+	 *
 	 * @throws NullPointerException if this.inputImage == null
 	 * @throws IllegalArgumentException if this.inputImage is not binary
 	 * @throws IllegalArgumentException if this.inputImage could not be
@@ -106,30 +110,30 @@ public class TriplePointAngles implements Op {
 
 		skeletonAnalyzer.setup("", inputImage);
 		skeletonAnalyzer.run();
-		Graph[] graphs = skeletonAnalyzer.getGraphs();
+		final Graph[] graphs = skeletonAnalyzer.getGraphs();
 
 		if (graphs == null || graphs.length == 0) {
 			throw new IllegalArgumentException(
 				"Input image could not be skeletonized");
 		}
 
-		ArrayList<ArrayList<double[]>> graphsVertices = new ArrayList<>();
+		final ArrayList<ArrayList<double[]>> graphsVertices = new ArrayList<>();
 
-		for (Graph graph : graphs) {
-			ArrayList<Vertex> vertices = graph.getVertices();
-			ArrayList<double[]> vertexAngles = new ArrayList<>();
+		for (final Graph graph : graphs) {
+			final ArrayList<Vertex> vertices = graph.getVertices();
+			final ArrayList<double[]> vertexAngles = new ArrayList<>();
 
-			for (Vertex vertex : vertices) {
+			for (final Vertex vertex : vertices) {
 				if (!isTriplePoint(vertex)) {
 					continue;
 				}
 
-				ArrayList<Edge> edges = vertex.getBranches();
-				Edge edge0 = edges.get(0);
-				Edge edge1 = edges.get(1);
-				Edge edge2 = edges.get(2);
+				final ArrayList<Edge> edges = vertex.getBranches();
+				final Edge edge0 = edges.get(0);
+				final Edge edge1 = edges.get(1);
+				final Edge edge2 = edges.get(2);
 
-				double thetas[] = new double[3];
+				final double thetas[] = new double[3];
 				if (nthPoint == VERTEX_TO_VERTEX) {
 					thetas[0] = vertexToVertexAngle(vertex, edge0, edge1);
 					thetas[1] = vertexToVertexAngle(vertex, edge0, edge2);
@@ -149,7 +153,7 @@ public class TriplePointAngles implements Op {
 		results = new double[graphsVertices.size()][][];
 		final int treeSize = graphsVertices.size();
 		for (int g = 0; g < treeSize; g++) {
-			ArrayList<double[]> vertexAngles = graphsVertices.get(g);
+			final ArrayList<double[]> vertexAngles = graphsVertices.get(g);
 			final int graphSize = vertexAngles.size();
 			results[g] = new double[graphSize][];
 			for (int v = 0; v < graphSize; v++) {
@@ -169,7 +173,7 @@ public class TriplePointAngles implements Op {
 	}
 
 	@Override
-	public void setEnvironment(OpEnvironment opEnvironment) {
+	public void setEnvironment(final OpEnvironment opEnvironment) {
 
 	}
 
@@ -180,7 +184,7 @@ public class TriplePointAngles implements Op {
 	 * @throws NullPointerException if image == null
 	 * @throws IllegalArgumentException if image is not binary
 	 */
-	private static void checkImage(ImagePlus image) {
+	private static void checkImage(final ImagePlus image) {
 		checkNotNull(image, "Must have an input image");
 		checkArgument(ImageCheck.isBinary(image), "Input image must be binary");
 	}
@@ -191,37 +195,39 @@ public class TriplePointAngles implements Op {
 	 * @throws IllegalArgumentException if parameter nthPoint < 0 && nthPoint !=
 	 *           TriplePointAngles#VERTEX_TO_VERTEX
 	 */
-	private static void checkNthPoint(int nthPoint) {
+	private static void checkNthPoint(final int nthPoint) {
 		checkArgument(nthPoint >= 0 || nthPoint == VERTEX_TO_VERTEX,
 			"Invalid nth point value");
 	}
 
-	private static boolean isVoxel26Connected(Point point, Point voxel) {
-		int xDistance = Math.abs(point.x - voxel.x);
-		int yDistance = Math.abs(point.y - voxel.y);
-		int zDistance = Math.abs(point.z - voxel.z);
+	private static boolean isVoxel26Connected(final Point point,
+		final Point voxel)
+	{
+		final int xDistance = Math.abs(point.x - voxel.x);
+		final int yDistance = Math.abs(point.y - voxel.y);
+		final int zDistance = Math.abs(point.z - voxel.z);
 
 		return xDistance <= 1 && yDistance <= 1 && zDistance <= 1;
 	}
 
-	private static boolean isTriplePoint(Vertex vertex) {
+	private static boolean isTriplePoint(final Vertex vertex) {
 		return vertex.getBranches().size() == 3;
 	}
 
-	private static double vertexToVertexAngle(Vertex vertex, Edge edge0,
-		Edge edge1)
+	private static double vertexToVertexAngle(final Vertex vertex,
+		final Edge edge0, final Edge edge1)
 	{
-		Vertex oppositeVertex0 = edge0.getOppositeVertex(vertex);
-		Vertex oppositeVertex1 = edge1.getOppositeVertex(vertex);
+		final Vertex oppositeVertex0 = edge0.getOppositeVertex(vertex);
+		final Vertex oppositeVertex1 = edge1.getOppositeVertex(vertex);
 
-		ArrayList<Point> vertexPoints = vertex.getPoints();
-		ArrayList<Point> oppositeVertex0Points = oppositeVertex0.getPoints();
-		ArrayList<Point> oppositeVertex1Points = oppositeVertex1.getPoints();
+		final ArrayList<Point> vertexPoints = vertex.getPoints();
+		final ArrayList<Point> oppositeVertex0Points = oppositeVertex0.getPoints();
+		final ArrayList<Point> oppositeVertex1Points = oppositeVertex1.getPoints();
 
-		double[] vertexCentroid = Centroid.getCentroid(vertexPoints);
-		double[] oppositeVertex0Centroid = Centroid.getCentroid(
+		final double[] vertexCentroid = Centroid.getCentroid(vertexPoints);
+		final double[] oppositeVertex0Centroid = Centroid.getCentroid(
 			oppositeVertex0Points);
-		double[] oppositeVertex1Centroid = Centroid.getCentroid(
+		final double[] oppositeVertex1Centroid = Centroid.getCentroid(
 			oppositeVertex1Points);
 
 		return Vectors.joinedVectorAngle(oppositeVertex0Centroid[0],
@@ -231,22 +237,24 @@ public class TriplePointAngles implements Op {
 			vertexCentroid[2]);
 	}
 
-	private double vertexAngle(Vertex vertex, Edge edge0, Edge edge1) {
-		Point p0 = getNthPointOfEdge(vertex, edge0);
-		Point p1 = getNthPointOfEdge(vertex, edge1);
+	private double vertexAngle(final Vertex vertex, final Edge edge0,
+		final Edge edge1)
+	{
+		final Point p0 = getNthPointOfEdge(vertex, edge0);
+		final Point p1 = getNthPointOfEdge(vertex, edge1);
 
-		double cv[] = Centroid.getCentroid(vertex.getPoints());
+		final double cv[] = Centroid.getCentroid(vertex.getPoints());
 		return Vectors.joinedVectorAngle(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, cv[0],
 			cv[1], cv[2]);
 	}
 
-	private Point getNthPointOfEdge(Vertex vertex, Edge edge) {
-		ArrayList<Point> vertexPoints = vertex.getPoints();
-		ArrayList<Point> edgePoints = edge.getSlabs();
+	private Point getNthPointOfEdge(final Vertex vertex, final Edge edge) {
+		final ArrayList<Point> vertexPoints = vertex.getPoints();
+		final ArrayList<Point> edgePoints = edge.getSlabs();
 		boolean startAtZero = false;
-		Point edgeStart = edgePoints.get(0);
+		final Point edgeStart = edgePoints.get(0);
 
-		for (Point vertexPoint : vertexPoints) {
+		for (final Point vertexPoint : vertexPoints) {
 			if (isVoxel26Connected(edgeStart, vertexPoint)) {
 				startAtZero = true;
 				break;
