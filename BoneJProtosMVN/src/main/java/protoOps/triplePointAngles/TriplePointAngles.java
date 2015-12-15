@@ -1,3 +1,4 @@
+
 package protoOps.triplePointAngles;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -32,6 +33,7 @@ import ij.ImagePlus;
  */
 @Plugin(type = Op.class, name = "triplePointAngles")
 public class TriplePointAngles implements Op {
+
 	public static final int DEFAULT_NTH_POINT = 0;
 	public static final int VERTEX_TO_VERTEX = -1;
 
@@ -52,9 +54,8 @@ public class TriplePointAngles implements Op {
 	private double results[][][] = null;
 
 	/**
-	 * @return The angle array from previous run Returns null if the plugin
-	 *         hasn't executed yet, or if there was a problem in the previous
-	 *         run
+	 * @return The angle array from previous run Returns null if the plugin hasn't
+	 *         executed yet, or if there was a problem in the previous run
 	 * @see TriplePointAngles#results
 	 */
 	public double[][][] getResults() {
@@ -64,10 +65,8 @@ public class TriplePointAngles implements Op {
 	/**
 	 * Sets the input image for processing
 	 * 
-	 * @throws NullPointerException
-	 *             if image == null
-	 * @throws IllegalArgumentException
-	 *             if image is not binary
+	 * @throws NullPointerException if image == null
+	 * @throws IllegalArgumentException if image is not binary
 	 */
 	public void setInputImage(ImagePlus image) {
 		checkImage(image);
@@ -76,14 +75,12 @@ public class TriplePointAngles implements Op {
 	}
 
 	/**
-	 * Sets the distance of the angle measurement from the centroid of the
-	 * triple points.
+	 * Sets the distance of the angle measurement from the centroid of the triple
+	 * points.
 	 *
-	 * @param nthPoint
-	 *            number pixels from the triple point centroid
-	 * @throws IllegalArgumentException
-	 *             if nthPoint < 0 && nthPoint !=
-	 *             TriplePointAngles#VERTEX_TO_VERTEX
+	 * @param nthPoint number pixels from the triple point centroid
+	 * @throws IllegalArgumentException if nthPoint < 0 && nthPoint !=
+	 *           TriplePointAngles#VERTEX_TO_VERTEX
 	 */
 	public void setNthPoint(int nthPoint) {
 		checkNthPoint(nthPoint);
@@ -92,15 +89,12 @@ public class TriplePointAngles implements Op {
 	}
 
 	/**
-	 * Calculates the triple point angles of the input image to the results
-	 * array
+	 * Calculates the triple point angles of the input image to the results array
 	 * 
-	 * @throws NullPointerException
-	 *             if this.inputImage == null
-	 * @throws IllegalArgumentException
-	 *             if this.inputImage is not binary
-	 * @throws IllegalArgumentException
-	 *             if this.inputImage could not be skeletonized
+	 * @throws NullPointerException if this.inputImage == null
+	 * @throws IllegalArgumentException if this.inputImage is not binary
+	 * @throws IllegalArgumentException if this.inputImage could not be
+	 *           skeletonized
 	 */
 	public void calculateTriplePointAngles() {
 		checkImage(inputImage);
@@ -115,7 +109,8 @@ public class TriplePointAngles implements Op {
 		Graph[] graphs = skeletonAnalyzer.getGraphs();
 
 		if (graphs == null || graphs.length == 0) {
-			throw new IllegalArgumentException("Input image could not be skeletonized");
+			throw new IllegalArgumentException(
+				"Input image could not be skeletonized");
 		}
 
 		ArrayList<ArrayList<double[]>> graphsVertices = new ArrayList<>();
@@ -139,7 +134,8 @@ public class TriplePointAngles implements Op {
 					thetas[0] = vertexToVertexAngle(vertex, edge0, edge1);
 					thetas[1] = vertexToVertexAngle(vertex, edge0, edge2);
 					thetas[2] = vertexToVertexAngle(vertex, edge1, edge2);
-				} else {
+				}
+				else {
 					thetas[0] = vertexAngle(vertex, edge0, edge1);
 					thetas[1] = vertexAngle(vertex, edge0, edge2);
 					thetas[2] = vertexAngle(vertex, edge1, edge2);
@@ -181,10 +177,8 @@ public class TriplePointAngles implements Op {
 	/**
 	 * Checks if the plugin can process the given image
 	 *
-	 * @throws NullPointerException
-	 *             if image == null
-	 * @throws IllegalArgumentException
-	 *             if image is not binary
+	 * @throws NullPointerException if image == null
+	 * @throws IllegalArgumentException if image is not binary
 	 */
 	private static void checkImage(ImagePlus image) {
 		checkNotNull(image, "Must have an input image");
@@ -194,12 +188,12 @@ public class TriplePointAngles implements Op {
 	/**
 	 * Checks if the the plugin can use the given nthPoint value
 	 *
-	 * @throws IllegalArgumentException
-	 *             if parameter nthPoint < 0 && nthPoint !=
-	 *             TriplePointAngles#VERTEX_TO_VERTEX
+	 * @throws IllegalArgumentException if parameter nthPoint < 0 && nthPoint !=
+	 *           TriplePointAngles#VERTEX_TO_VERTEX
 	 */
 	private static void checkNthPoint(int nthPoint) {
-		checkArgument(nthPoint >= 0 || nthPoint == VERTEX_TO_VERTEX, "Invalid nth point value");
+		checkArgument(nthPoint >= 0 || nthPoint == VERTEX_TO_VERTEX,
+			"Invalid nth point value");
 	}
 
 	private static boolean isVoxel26Connected(Point point, Point voxel) {
@@ -214,7 +208,9 @@ public class TriplePointAngles implements Op {
 		return vertex.getBranches().size() == 3;
 	}
 
-	private static double vertexToVertexAngle(Vertex vertex, Edge edge0, Edge edge1) {
+	private static double vertexToVertexAngle(Vertex vertex, Edge edge0,
+		Edge edge1)
+	{
 		Vertex oppositeVertex0 = edge0.getOppositeVertex(vertex);
 		Vertex oppositeVertex1 = edge1.getOppositeVertex(vertex);
 
@@ -223,12 +219,16 @@ public class TriplePointAngles implements Op {
 		ArrayList<Point> oppositeVertex1Points = oppositeVertex1.getPoints();
 
 		double[] vertexCentroid = Centroid.getCentroid(vertexPoints);
-		double[] oppositeVertex0Centroid = Centroid.getCentroid(oppositeVertex0Points);
-		double[] oppositeVertex1Centroid = Centroid.getCentroid(oppositeVertex1Points);
+		double[] oppositeVertex0Centroid = Centroid.getCentroid(
+			oppositeVertex0Points);
+		double[] oppositeVertex1Centroid = Centroid.getCentroid(
+			oppositeVertex1Points);
 
-		return Vectors.joinedVectorAngle(oppositeVertex0Centroid[0], oppositeVertex0Centroid[1],
-				oppositeVertex0Centroid[2], oppositeVertex1Centroid[0], oppositeVertex1Centroid[1],
-				oppositeVertex1Centroid[2], vertexCentroid[0], vertexCentroid[1], vertexCentroid[2]);
+		return Vectors.joinedVectorAngle(oppositeVertex0Centroid[0],
+			oppositeVertex0Centroid[1], oppositeVertex0Centroid[2],
+			oppositeVertex1Centroid[0], oppositeVertex1Centroid[1],
+			oppositeVertex1Centroid[2], vertexCentroid[0], vertexCentroid[1],
+			vertexCentroid[2]);
 	}
 
 	private double vertexAngle(Vertex vertex, Edge edge0, Edge edge1) {
@@ -236,7 +236,8 @@ public class TriplePointAngles implements Op {
 		Point p1 = getNthPointOfEdge(vertex, edge1);
 
 		double cv[] = Centroid.getCentroid(vertex.getPoints());
-		return Vectors.joinedVectorAngle(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, cv[0], cv[1], cv[2]);
+		return Vectors.joinedVectorAngle(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, cv[0],
+			cv[1], cv[2]);
 	}
 
 	private Point getNthPointOfEdge(Vertex vertex, Edge edge) {
